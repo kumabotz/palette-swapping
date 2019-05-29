@@ -49,3 +49,20 @@ public class ColorPalette : ScriptableObject
         return palette;
     }
 }
+
+[CustomEditor(typeof(ColorPalette))]
+public class ColorPaletteEditor : Editor
+{
+    public ColorPalette ColorPalette;
+
+    void OnEnable()
+    {
+        ColorPalette = target as ColorPalette;
+    }
+
+    public override void OnInspectorGUI()
+    {
+        GUILayout.Label("Source Texture");
+        base.OnInspectorGUI();
+    }
+}
