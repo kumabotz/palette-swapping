@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 [Serializable]
 public class ColorPalette : ScriptableObject
 {
-    public Texture2D Source;
-    public List<Color> Palette = new List<Color>();
-    public List<Color> NewPalette = new List<Color>();
+    public Texture2D source;
+    public List<Color> palette = new List<Color>();
+    public List<Color> newPalette = new List<Color>();
+    public Texture2D cachedTexture;
 
+#if UNITY_EDITOR
     [MenuItem("Assets/Create/Color Palette")]
     public static void CreateColorPalette()
     {
@@ -19,7 +23,7 @@ public class ColorPalette : ScriptableObject
             var assetPath = AssetDatabase.GetAssetPath(selectedTexture).Replace(".png", "-color-palette.asset");
 
             var newPalette = CustomAssetUtil.CreateAsset<ColorPalette>(assetPath);
-            newPalette.Source = selectedTexture;
+            newPalette.source = selectedTexture;
             newPalette.ResetPalette();
 
             Debug.Log("Created a Palette: " + assetPath);
@@ -29,11 +33,29 @@ public class ColorPalette : ScriptableObject
             Debug.Log("Can't create a Palette");
         }
     }
+#endif
 
     public void ResetPalette()
     {
-        Palette = BuildPalette(Source);
-        NewPalette = new List<Color>(Palette  );
+        palette = BuildPalette(source);
+        newPalette = new List<Color>(palette  );
+    }
+
+    public Color GetColor(Color color)
+    {
+        for (var i = 0; i < palette.Count; i++)
+        {
+            var tmpColor = palette[i];
+            if (Mathf.Approximately(color.r, tmpColor.r) &&
+                Mathf.Approximately(color.g, tmpColor.g) &&
+                Mathf.Approximately(color.b, tmpColor.b) &&
+                Mathf.Approximately(color.a, tmpColor.a))
+            {
+                return newPalette[i];
+            }
+        }
+
+        return color;
     }
 
     private List<Color> BuildPalette(Texture2D texture)
@@ -50,39 +72,41 @@ public class ColorPalette : ScriptableObject
     }
 }
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(ColorPalette))]
 public class ColorPaletteEditor : Editor
 {
-    public ColorPalette ColorPalette;
+    public ColorPalette colorPalette;
 
     void OnEnable()
     {
-        ColorPalette = target as ColorPalette;
+        colorPalette = target as ColorPalette;
     }
 
     public override void OnInspectorGUI()
     {
         GUILayout.Label("Source Texture");
-        ColorPalette.Source = EditorGUILayout.ObjectField(ColorPalette.Source, typeof(Texture2D), false) as Texture2D;
+        colorPalette.source = EditorGUILayout.ObjectField(colorPalette.source, typeof(Texture2D), false) as Texture2D;
 
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("Current Color");
         GUILayout.Label("New Color");
         EditorGUILayout.EndHorizontal();
 
-        for (var i = 0; i < ColorPalette.Palette.Count; i++)
+        for (var i = 0; i < colorPalette.palette.Count; i++)
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.ColorField(ColorPalette.Palette[i]);
-            ColorPalette.NewPalette[i] = EditorGUILayout.ColorField(ColorPalette.NewPalette [i]);
+            EditorGUILayout.ColorField(colorPalette.palette[i]);
+            colorPalette.newPalette[i] = EditorGUILayout.ColorField(colorPalette.newPalette [i]);
             EditorGUILayout.EndHorizontal();
         }
 
         if (GUILayout.Button("Revert Palette"))
         {
-            ColorPalette.ResetPalette();
+            colorPalette.ResetPalette();
         }
 
-        EditorUtility.SetDirty(ColorPalette);
+        EditorUtility.SetDirty(colorPalette);
     }
 }
+#endif

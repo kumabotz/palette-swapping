@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class CustomAssetUtil
 {
+#if UNITY_EDITOR
     public static T CreateAsset<T>(string path) where T : ScriptableObject
     {
         var asset = ScriptableObject.CreateInstance<T>();
@@ -11,4 +12,5 @@ public class CustomAssetUtil
         AssetDatabase.SaveAssets();
         return asset;
     }
+#endif
 }
