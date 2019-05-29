@@ -63,6 +63,26 @@ public class ColorPaletteEditor : Editor
     public override void OnInspectorGUI()
     {
         GUILayout.Label("Source Texture");
-        base.OnInspectorGUI();
+        ColorPalette.Source = EditorGUILayout.ObjectField(ColorPalette.Source, typeof(Texture2D), false) as Texture2D;
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Current Color");
+        GUILayout.Label("New Color");
+        EditorGUILayout.EndHorizontal();
+
+        for (var i = 0; i < ColorPalette.Palette.Count; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.ColorField(ColorPalette.Palette[i]);
+            ColorPalette.NewPalette[i] = EditorGUILayout.ColorField(ColorPalette.NewPalette [i]);
+            EditorGUILayout.EndHorizontal();
+        }
+
+        if (GUILayout.Button("Revert Palette"))
+        {
+            ColorPalette.ResetPalette();
+        }
+
+        EditorUtility.SetDirty(ColorPalette);
     }
 }
